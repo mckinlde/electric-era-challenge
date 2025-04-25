@@ -19,11 +19,19 @@ void errorAndExit(const std::string& message) {
     std::exit(1);
 }
 
-int main() {
-    std::ifstream inputFile("./test_data/input_1.txt");
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <path-to-input-file>" << std::endl;
+        std::cout << "ERROR" << std::endl;
+        return 1;
+    }
+
+    std::ifstream inputFile(argv[1]);
 
     if (!inputFile.is_open()) {
-        errorAndExit("Could not open input file");
+        std::cerr << "❌ Error: Could not open input file: " << argv[1] << std::endl;
+        std::cout << "ERROR" << std::endl;
+        return 1;
     }
 
     ParseMode mode = ParseMode::None;
@@ -96,6 +104,32 @@ int main() {
     }
     inputFile.close();
 
-    // (Station rollup and output will come next, this just parses and validates)
+    std::vector<std::pair<int, int>> stationUptimes;
+
+    for (const auto& [stationId, chargerIds] : stationToChargers) {
+        double totalUptime = 0.0;
+        int chargerCount = 0;
+
+        for (int chargerId : chargerIds) {
+            if (chargersById.find(chargerId) != chargersById.end()) {
+                double uptime = chargersById[chargerId].computeUptimeLast7d(latestTime);
+                totalUptime += uptime;
+                chargerCount++;
+            }
+        }
+
+        if (chargerCount > 0) {
+            double averageUptime = totalUptime / chargerCount;
+            int uptimeInt = static_cast<int>(averageUptime); // round down
+            stationUptimes.push_back({stationId, uptimeInt});
+        }
+    }
+
+    std::sort(stationUptimes.begin(), stationUptimes.end());
+
+    for (const auto& [stationId, uptime] : stationUptimes) {
+        std::cout << stationId << " " << uptime << std::endl;
+    }
+
     return 0;
 }
