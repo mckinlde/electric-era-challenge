@@ -10,7 +10,7 @@
       packages = with pkgs; [
         gcc
         cmake
-        make
+        gnumake
         gdb
         valgrind
       ];
@@ -21,3 +21,4 @@
     };
   };
 }
+
