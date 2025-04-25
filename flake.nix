@@ -20,7 +20,17 @@
       '';
     };
 
-    checks.x86_64-linux.devShell = import nixpkgs { system = "x86_64-linux"; };
+    checks.x86_64-linux.default = let
+      pkgs = import nixpkgs { system = "x86_64-linux"; };
+    in pkgs.mkShell {
+      packages = with pkgs; [
+        gcc
+        cmake
+        gnumake
+        gdb
+        valgrind
+      ];
+    };
   };
 }
 
