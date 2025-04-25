@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <tuple>
-
+#include <utility>
 class Charger {
 public:
     Charger();
@@ -12,6 +12,8 @@ public:
     double computeUptimeLast7d(long long now) const;
 
     int getId() const;
+    std::pair<long long, long long> getAvailableAndMonitoredSeconds(long long windowStart, long long now) const;
+
 
 private:
     int id;

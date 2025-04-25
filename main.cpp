@@ -106,30 +106,31 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::pair<int, int>> stationUptimes;
 
-    for (const auto& [stationId, chargerIds] : stationToChargers) {
-        double totalUptime = 0.0;
-        int chargerCount = 0;
+for (const auto& [stationId, chargerIds] : stationToChargers) {
+    long long stationAvailable = 0;
+    long long stationMonitored = 0;
 
-        for (int chargerId : chargerIds) {
-            if (chargersById.find(chargerId) != chargersById.end()) {
-                double uptime = chargersById[chargerId].computeUptimeLast7d(latestTime);
-                totalUptime += uptime;
-                chargerCount++;
-            }
-        }
-
-        if (chargerCount > 0) {
-            double averageUptime = totalUptime / chargerCount;
-            int uptimeInt = static_cast<int>(averageUptime); // round down
-            stationUptimes.push_back({stationId, uptimeInt});
+    for (int chargerId : chargerIds) {
+        if (chargersById.find(chargerId) != chargersById.end()) {
+            auto [available, monitored] = chargersById[chargerId].getAvailableAndMonitoredSeconds(latestTime - 7 * 86400, latestTime);
+            stationAvailable += available;
+            stationMonitored += monitored;
         }
     }
 
-    std::sort(stationUptimes.begin(), stationUptimes.end());
-
-    for (const auto& [stationId, uptime] : stationUptimes) {
-        std::cout << stationId << " " << uptime << std::endl;
+    if (stationMonitored > 0) {
+        int uptimeInt = static_cast<int>((stationAvailable * 100) / stationMonitored);
+        stationUptimes.push_back({stationId, uptimeInt});
+    } else {
+        stationUptimes.push_back({stationId, 0});
     }
+}
+
+std::sort(stationUptimes.begin(), stationUptimes.end());
+
+for (const auto& [stationId, uptime] : stationUptimes) {
+    std::cout << stationId << " " << uptime << std::endl;
+}
 
     return 0;
 }

@@ -43,3 +43,24 @@ double Charger::computeUptime(long long windowStart, long long now) const {
 
     return (availableTime * 100.0) / totalWindow;
 }
+
+std::pair<long long, long long> Charger::getAvailableAndMonitoredSeconds(long long windowStart, long long now) const {
+    long long available = 0;
+    long long monitored = 0;
+
+    for (const auto& [start, end, isAvailable] : reports) {
+        if (end < windowStart || start > now) continue;
+
+        long long overlapStart = std::max(start, windowStart);
+        long long overlapEnd = std::min(end, now);
+
+        if (overlapStart < overlapEnd) {
+            long long duration = overlapEnd - overlapStart;
+            monitored += duration;
+            if (isAvailable) {
+                available += duration;
+            }
+        }
+    }
+    return {available, monitored};
+}
