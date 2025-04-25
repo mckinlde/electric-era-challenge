@@ -3,34 +3,28 @@
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs }: {
-    devShells.x86_64-linux.default = let
-      pkgs = import nixpkgs { system = "x86_64-linux"; };
-    in pkgs.mkShell {
-      packages = with pkgs; [
-        gcc
-        cmake
-        gnumake
-        gdb
-        valgrind
-      ];
+  outputs = { self, nixpkgs }: let
+    system = "x86_64-linux";
+    pkgs = import nixpkgs { inherit system; };
+
+    devPackages = with pkgs; [
+      gcc
+      cmake
+      gnumake
+      gdb
+      valgrind
+    ];
+  in {
+    devShells.${system}.default = pkgs.mkShell {
+      packages = devPackages;
 
       shellHook = ''
         echo "⚡ Welcome to the Electric Era dev shell"
       '';
     };
 
-    checks.x86_64-linux.default = let
-      pkgs = import nixpkgs { system = "x86_64-linux"; };
-    in pkgs.mkShell {
-      packages = with pkgs; [
-        gcc
-        cmake
-        gnumake
-        gdb
-        valgrind
-      ];
+    checks.${system}.default = pkgs.mkShell {
+      packages = devPackages;
     };
   };
 }
-
