@@ -1,6 +1,6 @@
-// Charger.cpp
+#include "charger.hpp"
 
-#include "Charger.hpp"
+Charger::Charger() : id(-1) {}  // Default constructor, sets id to invalid -1
 
 Charger::Charger(int id) : id(id) {}
 
