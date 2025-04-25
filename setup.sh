@@ -14,22 +14,22 @@ touch charger.cpp
 # Pull nlohmann/json single-header JSON library
 curl -L -o json.hpp https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp
 
-# Clone official Electric Era GitLab repo
+# Clone official Electric Era GitLab repo into clearly named temp folder
 echo "🌐 Cloning Electric Era public GitLab repo..."
-git clone --depth=1 https://gitlab.com/electric-era-public/coding-challenge-charger-uptime.git temp_challenge_repo
+git clone --depth=1 https://gitlab.com/electric-era-public/coding-challenge-charger-uptime.git test-data-upstream
 
 # Copy official input/output test files
 echo "📄 Copying input/output test files..."
-cp temp_challenge_repo/input.txt test_data/input.txt
-cp temp_challenge_repo/expected_output.txt test_data/expected_output.txt
-cp temp_challenge_repo/input_2.txt test_data/input_2.txt
-cp temp_challenge_repo/expected_output_2.txt test_data/expected_output_2.txt
+cp test-data-upstream/input_1.txt test_data/input_1.txt
+cp test-data-upstream/input_1_expected_stdout.txt test_data/expected_output_1.txt
+cp test-data-upstream/input_2.txt test_data/input_2.txt
+cp test-data-upstream/input_2_expected_stdout.txt test_data/expected_output_2.txt
 
 # Clean up temporary clone
 echo "🧹 Cleaning up temporary files..."
-rm -rf temp_challenge_repo
+rm -rf test-data-upstream
 
-# Add .gitignore to ignore build artifacts
+# Add .gitignore entries to ignore build artifacts
 echo "hello" >> .gitignore
 echo "a.out" >> .gitignore
 echo "build/" >> .gitignore
