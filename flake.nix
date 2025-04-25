@@ -19,6 +19,8 @@
         echo "⚡ Welcome to the Electric Era dev shell"
       '';
     };
+
+    checks.x86_64-linux.devShell = import nixpkgs { system = "x86_64-linux"; };
   };
 }
 
