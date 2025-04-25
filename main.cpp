@@ -3,6 +3,8 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <vector>
+#include <algorithm>
 #include "charger.hpp"
 
 enum class ParseMode {
@@ -11,18 +13,24 @@ enum class ParseMode {
     ChargerReports
 };
 
+void errorAndExit(const std::string& message) {
+    std::cerr << "Error: " << message << std::endl;
+    std::cout << "ERROR" << std::endl;
+    std::exit(1);
+}
+
 int main() {
     std::ifstream inputFile("./test_data/input_1.txt");
 
     if (!inputFile.is_open()) {
-        std::cerr << "❌ Error: Could not open input_1.txt" << std::endl;
-        return 1;
+        errorAndExit("Could not open input file");
     }
 
     ParseMode mode = ParseMode::None;
-    std::unordered_map<int, std::vector<int>> stationToChargers; // station_id ➔ charger_ids
-    std::unordered_map<int, Charger> chargersById; // charger_id ➔ Charger object
+    std::unordered_map<int, std::vector<int>> stationToChargers;
+    std::unordered_map<int, Charger> chargersById;
     std::string line;
+    long long latestTime = 0;
 
     while (std::getline(inputFile, line)) {
         if (line.empty()) continue;
@@ -40,16 +48,21 @@ int main() {
             case ParseMode::Stations: {
                 std::istringstream iss(line);
                 int stationId;
-                iss >> stationId;
+                if (!(iss >> stationId)) {
+                    errorAndExit("Invalid station line: " + line);
+                }
 
                 int chargerId;
+                bool hasCharger = false;
                 while (iss >> chargerId) {
+                    hasCharger = true;
                     stationToChargers[stationId].push_back(chargerId);
-
-                    // Create Charger object if it doesn't exist yet
                     if (chargersById.find(chargerId) == chargersById.end()) {
                         chargersById.emplace(chargerId, Charger(chargerId));
                     }
+                }
+                if (!hasCharger) {
+                    errorAndExit("Station without chargers: " + line);
                 }
                 break;
             }
@@ -59,28 +72,30 @@ int main() {
                 long long startTime, endTime;
                 bool isAvailable;
 
-                iss >> chargerId >> startTime >> endTime >> std::boolalpha >> isAvailable;
+                if (!(iss >> chargerId >> startTime >> endTime >> std::boolalpha >> isAvailable)) {
+                    errorAndExit("Invalid charger report line: " + line);
+                }
+
+                if (startTime >= endTime) {
+                    errorAndExit("Start time must be before end time: " + line);
+                }
 
                 if (chargersById.find(chargerId) != chargersById.end()) {
                     chargersById[chargerId].addReport(startTime, endTime, isAvailable);
+                    latestTime = std::max(latestTime, endTime);
                 } else {
-                    std::cerr << "⚠️  Warning: Report for unknown charger ID " << chargerId << std::endl;
+                    errorAndExit("Report for unknown charger ID: " + std::to_string(chargerId));
                 }
                 break;
             }
             case ParseMode::None:
             default:
-                std::cerr << "⚠️  Unexpected line outside sections: " << line << std::endl;
+                errorAndExit("Unexpected line outside sections: " + line);
                 break;
         }
     }
-
     inputFile.close();
 
-    // Debug output: list chargers and their report counts
-    for (const auto& [chargerId, charger] : chargersById) {
-        std::cout << "Charger ID: " << charger.getId() << std::endl;
-    }
-
+    // (Station rollup and output will come next, this just parses and validates)
     return 0;
 }
