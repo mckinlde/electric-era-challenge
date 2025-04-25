@@ -23,8 +23,18 @@
       '';
     };
 
-    checks.${system}.default = pkgs.mkShell {
+    checks.${system}.devEnv = pkgs.mkShell {
       packages = devPackages;
+    };
+
+    checks.${system}.buildBinary = pkgs.stdenv.mkDerivation {
+      name = "electric-era-submission";
+      src = ./.; # current directory
+      buildPhase = ''
+        mkdir -p $out/bin
+        g++ -std=c++17 -O2 main.cpp -o $out/bin/submission
+      '';
+      installPhase = "true"; # no extra install steps
     };
   };
 }
