@@ -13,12 +13,11 @@
       gnumake
       gdb
       valgrind
-      coreutils
+      coreutils  # useful for shell utilities like 'echo', 'mkdir', etc.
     ];
   in {
     devShells.${system}.default = pkgs.mkShell {
       packages = devPackages;
-
       shellHook = ''
         echo "⚡ Welcome to the Electric Era dev shell"
       '';
@@ -59,7 +58,10 @@
 
           echo "✅ Output matched expected: $output"
         '';
-        installPhase = "true";
+        installPhase = ''
+          mkdir -p $out
+          echo "runBinary check passed" > $out/ok.txt
+        '';
       };
     };
   };
