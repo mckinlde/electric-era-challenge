@@ -1,3 +1,8 @@
+#!/usr/bin/env bash
+set -e
+
+echo "📦 Setting up Electric Era challenge project..."
+
 # Create project subfolders
 mkdir -p test_data
 
@@ -6,24 +11,32 @@ touch main.cpp
 touch charger.hpp
 touch charger.cpp
 
-# Pull the nlohmann/json single-header library for JSON parsing
+# Pull nlohmann/json single-header JSON library
 curl -L -o json.hpp https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp
 
-# Pull Electric Era official input/output files
-# First test case
-curl -L -o test_data/input.txt https://gitlab.com/electric-era-public/coding-challenge-charger-uptime/-/raw/main/input.txt
-curl -L -o test_data/expected_output.txt https://gitlab.com/electric-era-public/coding-challenge-charger-uptime/-/raw/main/expected_output.txt
+# Clone official Electric Era GitLab repo
+echo "🌐 Cloning Electric Era public GitLab repo..."
+git clone --depth=1 https://gitlab.com/electric-era-public/coding-challenge-charger-uptime.git temp_challenge_repo
 
-# Second test case
-curl -L -o test_data/input_2.txt https://gitlab.com/electric-era-public/coding-challenge-charger-uptime/-/raw/main/input_2.txt
-curl -L -o test_data/expected_output_2.txt https://gitlab.com/electric-era-public/coding-challenge-charger-uptime/-/raw/main/expected_output_2.txt
+# Copy official input/output test files
+echo "📄 Copying input/output test files..."
+cp temp_challenge_repo/input.txt test_data/input.txt
+cp temp_challenge_repo/expected_output.txt test_data/expected_output.txt
+cp temp_challenge_repo/input_2.txt test_data/input_2.txt
+cp temp_challenge_repo/expected_output_2.txt test_data/expected_output_2.txt
+
+# Clean up temporary clone
+echo "🧹 Cleaning up temporary files..."
+rm -rf temp_challenge_repo
 
 # Add .gitignore to ignore build artifacts
 echo "hello" >> .gitignore
 echo "a.out" >> .gitignore
 echo "build/" >> .gitignore
 
-# Stage everything into git
+# Stage and commit new files
 git add main.cpp charger.hpp charger.cpp json.hpp test_data/ .gitignore
-git commit -m "chore: scaffold project structure and pull official Electric Era test data"
+git commit -m "chore: scaffold project structure and pull verified Electric Era test data"
 git push
+
+echo "✅ Setup complete!"
