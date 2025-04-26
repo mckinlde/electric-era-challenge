@@ -1,5 +1,3 @@
----
-
 # Electric Era Coding Challenge Submission
 
 ## Project Overview
