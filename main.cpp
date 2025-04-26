@@ -22,6 +22,7 @@ void errorAndExit(const std::string& message) {
 }
 
 int main(int argc, char* argv[]) {
+    // Validate command-line arguments
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <path-to-input-file>" << std::endl;
         std::cout << "ERROR" << std::endl;
@@ -35,9 +36,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // Initialize parsing mode and data structures
     ParseMode mode = ParseMode::None;
-    std::unordered_map<int, std::vector<int>> stationToChargers;
-    std::unordered_map<int, Charger> chargersById;
+    std::unordered_map<int, std::vector<int>> stationToChargers; // Station ID -> list of Charger IDs
+    std::unordered_map<int, Charger> chargersById;               // Charger ID -> Charger object
     std::string line;
     long long latestTime = 0;
 
@@ -56,6 +58,7 @@ int main(int argc, char* argv[]) {
 
         switch (mode) {
             case ParseMode::Stations: {
+                // Parse station line: <station_id> <charger_id> ...
                 std::istringstream iss(line);
                 int stationId;
                 if (!(iss >> stationId)) {
@@ -77,6 +80,7 @@ int main(int argc, char* argv[]) {
                 break;
             }
             case ParseMode::ChargerReports: {
+                // Parse charger report line: <charger_id> <start_time> <end_time> <isAvailable>
                 std::istringstream iss(line);
                 int chargerId;
                 long long startTime, endTime;
@@ -114,15 +118,14 @@ int main(int argc, char* argv[]) {
         long long stationMonitored = 0;
 
         for (int chargerId : chargerIds) {
-    if (chargersById.find(chargerId) != chargersById.end()) {
-        auto [available, monitored] = chargersById[chargerId].getAvailableAndMonitoredSeconds(latestTime - 7 * 86400, latestTime);
-        if (monitored > 0) { // only include chargers that actually had events
-            stationAvailable += available;
-            stationMonitored += monitored;
+            if (chargersById.find(chargerId) != chargersById.end()) {
+                auto [available, monitored] = chargersById[chargerId].getAvailableAndMonitoredSeconds(latestTime - 7 * 86400, latestTime);
+                if (monitored > 0) { // Only include chargers that have reports
+                    stationAvailable += available;
+                    stationMonitored += monitored;
+                }
+            }
         }
-    }
-}
-
 
         if (stationMonitored > 0) {
             int uptimeInt = static_cast<int>((stationAvailable * 100) / stationMonitored);

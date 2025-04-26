@@ -13,6 +13,9 @@ int Charger::getId() const {
     return id;
 }
 
+// Returns (available seconds, monitored seconds) for a charger in the window [windowStart, now]
+// Monitoring only spans from the first report to the last report
+// Downtime is assumed between gaps and after the last report
 std::pair<long long, long long> Charger::getAvailableAndMonitoredSeconds(long long windowStart, long long now) const {
     if (reports.empty()) {
         return {0, 0};
@@ -34,14 +37,15 @@ std::pair<long long, long long> Charger::getAvailableAndMonitoredSeconds(long lo
         long long overlapEnd = end;
 
         if (curTime < overlapStart) {
-            // downtime between curTime and overlapStart
+            // downtime between last curTime and next report start
             monitored += (overlapStart - curTime);
         }
 
         if (overlapStart < overlapEnd) {
-            monitored += (overlapEnd - overlapStart);
+            long long duration = overlapEnd - overlapStart;
+            monitored += duration;
             if (isAvailable) {
-                available += (overlapEnd - overlapStart);
+                available += duration;
             }
             curTime = overlapEnd;
         }
