@@ -2,7 +2,8 @@
 
 ## Project Overview
 
-This project solves the Electric Era charger uptime calculation challenge.  
+This project solves the Electric Era charger uptime calculation challenge: https://gitlab.com/electric-era-public/coding-challenge-charger-uptime/-/blob/main/README.md?ref_type=heads#overview
+
 It is implemented in C++ with a flake-based Nix development environment for reproducibility and portability.
 
 The program:
