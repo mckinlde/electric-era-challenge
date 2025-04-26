@@ -7,12 +7,14 @@
 #include <algorithm>
 #include "charger.hpp"
 
+// Parsing states for input sections
 enum class ParseMode {
     None,
     Stations,
     ChargerReports
 };
 
+// Print an error, output "ERROR" to stdout, and exit
 void errorAndExit(const std::string& message) {
     std::cerr << "Error: " << message << std::endl;
     std::cout << "ERROR" << std::endl;
@@ -27,7 +29,6 @@ int main(int argc, char* argv[]) {
     }
 
     std::ifstream inputFile(argv[1]);
-
     if (!inputFile.is_open()) {
         std::cerr << "❌ Error: Could not open input file: " << argv[1] << std::endl;
         std::cout << "ERROR" << std::endl;
@@ -40,6 +41,7 @@ int main(int argc, char* argv[]) {
     std::string line;
     long long latestTime = 0;
 
+    // Parse the input file
     while (std::getline(inputFile, line)) {
         if (line.empty()) continue;
 
@@ -106,31 +108,36 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::pair<int, int>> stationUptimes;
 
-for (const auto& [stationId, chargerIds] : stationToChargers) {
-    long long stationAvailable = 0;
-    long long stationMonitored = 0;
+    // Calculate uptime for each station
+    for (const auto& [stationId, chargerIds] : stationToChargers) {
+        long long stationAvailable = 0;
+        long long stationMonitored = 0;
 
-    for (int chargerId : chargerIds) {
-        if (chargersById.find(chargerId) != chargersById.end()) {
-            auto [available, monitored] = chargersById[chargerId].getAvailableAndMonitoredSeconds(latestTime - 7 * 86400, latestTime);
+        for (int chargerId : chargerIds) {
+    if (chargersById.find(chargerId) != chargersById.end()) {
+        auto [available, monitored] = chargersById[chargerId].getAvailableAndMonitoredSeconds(latestTime - 7 * 86400, latestTime);
+        if (monitored > 0) { // only include chargers that actually had events
             stationAvailable += available;
             stationMonitored += monitored;
         }
     }
+}
 
-    if (stationMonitored > 0) {
-        int uptimeInt = static_cast<int>((stationAvailable * 100) / stationMonitored);
-        stationUptimes.push_back({stationId, uptimeInt});
-    } else {
-        stationUptimes.push_back({stationId, 0});
+
+        if (stationMonitored > 0) {
+            int uptimeInt = static_cast<int>((stationAvailable * 100) / stationMonitored);
+            stationUptimes.push_back({stationId, uptimeInt});
+        } else {
+            stationUptimes.push_back({stationId, 0});
+        }
     }
-}
 
-std::sort(stationUptimes.begin(), stationUptimes.end());
+    std::sort(stationUptimes.begin(), stationUptimes.end());
 
-for (const auto& [stationId, uptime] : stationUptimes) {
-    std::cout << stationId << " " << uptime << std::endl;
-}
+    // Output the final sorted results
+    for (const auto& [stationId, uptime] : stationUptimes) {
+        std::cout << stationId << " " << uptime << std::endl;
+    }
 
     return 0;
 }

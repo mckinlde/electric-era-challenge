@@ -14,5 +14,5 @@ public:
 
 private:
     int id;
-    std::vector<std::tuple<long long, long long, bool>> reports;
+    std::vector<std::tuple<long long, long long, bool>> reports; // (start, end, available)
 };
